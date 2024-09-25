@@ -1,7 +1,14 @@
 # Optitrack Motive data streamer
 
 This code utilises [the NatNet SDK](https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-4.0), and makes a streaming system that is much more flexible than NatNet.
-It is designed to run on the same computer as Motive, and you can control what is being streamed where with UDP packets containing unencrypted plain text string. The control packets are to be sent to port `64923`, see formatting below:
+
+You can start this by specifying the IP address of the computer Motive runs on as the input argument
+
+``` powershell
+./optitrack-motive-data-streamer 192.168.42.5
+```
+
+You can control what is being streamed where with UDP packets containing unencrypted plain text string. The control packets are to be sent to port `64923` (this is hard-coded, sorry), see formatting below:
 
 `<rigid_body_id_in_motive>;<udp_port_to_stream_to>;<decimation>`
 
