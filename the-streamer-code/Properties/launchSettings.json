@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "optitrack-motive-data-streamer": {
+      "commandName": "Project",
+      "commandLineArgs": "192.168.42.5 1"
+    }
+  }
+}

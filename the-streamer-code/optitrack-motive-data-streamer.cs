@@ -6,11 +6,14 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
+using System.Net.NetworkInformation;
 using System.Text;
+using System.IO;
 
 using NatNetML; // This is local to the code's directory, see the .csproj file. You need to copy NatNetLib.dll too.
 
@@ -74,8 +77,72 @@ public class OpitrackMotiveDataStreamer
     /*
      * Main function.
      */
-    static void Main()
+    static void Main(string[] input_arguments)
     {
+        /*
+         * Let's do some sanity check on the input arguments.
+         */
+
+        // Do we even have an input argument?
+        if (input_arguments.Length < 1)
+        {
+            Console.WriteLine("Please specify at least 1 input argument, which should be the IP address Motive is running on. Defaulting to 127.0.0.1. Maybe it will work?");
+            
+        }
+
+        // Is it an IPv4 thing?
+        string[] butchered_input_argument = input_arguments[0].Split('.');
+        if(butchered_input_argument.Length != 4)
+        {
+            Console.WriteLine("Error: The input argument ({0}) does not seem to be a valid IPv4 address.", input_arguments[0]);
+        }
+
+        // ok, if we got this far, then we can use this.
+        string motive_computer_s_ip = input_arguments[0];
+        Console.WriteLine("Motive is allegedly on {0}", motive_computer_s_ip);
+
+        /*
+         * Check if we have a local IPv4 address in the same subnet as NatNet's.
+         */
+        
+        string this_computer_s_host_name = Dns.GetHostName();
+        IPAddress[] this_computer_s_ip_addresses = Dns.GetHostAddresses(this_computer_s_host_name);
+
+        if (this_computer_s_ip_addresses.Length == 0)
+        {
+            Console.WriteLine("Error: This computer should have some sort of a network connection. At least a loopback interface?");
+            return;
+        }
+        Console.WriteLine("Local IP addresses are:");
+
+        for (int i = 0; i<this_computer_s_ip_addresses.Length; i++)
+        {
+            Console.WriteLine("{0}: {1}", i, this_computer_s_ip_addresses[i]);
+        }
+
+        if(input_arguments.Length == 1 && this_computer_s_ip_addresses.Length > 1)
+        {
+            Console.WriteLine("\nError - It seems that you have more than 1 IP address on your computer.");
+            Console.WriteLine("\tSpecify which one (0, 1, 2 ....) you want to use as your second input argument.");
+            Console.WriteLine("\tMotive and your computer should ideally be in the same subnet.");
+            return;
+        }
+
+        // Check if the second argument makes kind of sense.
+        var which_ip_address_to_use_if_we_have_many = uint.Parse(input_arguments[1]); // Rely on Microsoft.
+
+        if (which_ip_address_to_use_if_we_have_many >= this_computer_s_ip_addresses.Length)
+        {
+            Console.WriteLine("Error: You seem to have selected number {0} out of the {1} IP addresses you have on your computer. This doesn't make sense.",
+                                which_ip_address_to_use_if_we_have_many, this_computer_s_ip_addresses.Length);
+            return;
+        }
+
+
+        // If we survived this far, then:
+        string this_computer_s_ip = this_computer_s_ip_addresses[which_ip_address_to_use_if_we_have_many].ToString();
+
+
         long current_time = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); // Current unix time.
         long past_time = 0; // Previous unix time.
 
@@ -99,10 +166,13 @@ public class OpitrackMotiveDataStreamer
         }
 
 
-        //string this_computer_s_ip = "192.168.42.79";
-        string this_computer_s_ip = "127.0.0.1";
-        //string motive_computer_s_ip = "192.168.42.5";
-        string motive_computer_s_ip = "127.0.0.1";
+        
+        
+
+
+
+        
+        
 
         NatNetML.ConnectionType connection_type_to_motive = ConnectionType.Multicast;
 
@@ -472,10 +542,34 @@ public class OpitrackMotiveDataStreamer
     }
 
     /*
-    * This function waits for the instructions on the UDP port, and then parses the received information
-    * If everything went well, it updates the rigid_body_info_to_send array.
-    * This writes into the where to send data array. That needs mutex'd.
-    */
+     * This was shamelessly stolen from here:
+     * http://www.java2s.com/Code/CSharp/Network/GetSubnetMask.htm
+     * I modified the return path, I don't want exceptions here.
+     */
+    public static IPAddress? GetSubnetMask(IPAddress address)
+    {
+        foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
+            {
+                if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    if (address.Equals(unicastIPAddressInformation.Address))
+                    {
+                        return unicastIPAddressInformation.IPv4Mask;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
+        /*
+        * This function waits for the instructions on the UDP port, and then parses the received information
+        * If everything went well, it updates the rigid_body_info_to_send array.
+        * This writes into the where to send data array. That needs mutex'd.
+        */
     public static void WaitForInstructions()
     {
         while (keep_thread_alive == true)

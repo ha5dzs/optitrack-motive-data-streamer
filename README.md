@@ -4,8 +4,27 @@ This code utilises [the NatNet SDK](https://docs.optitrack.com/developer-tools/n
 
 You can start this by specifying the IP address of the computer Motive runs on as the input argument
 
-``` powershell
+```
 ./optitrack-motive-data-streamer 192.168.42.5
+```
+
+If you have many local network cards, you may have many IP addresses. If you don't know which one to use, the code prints a list before running:
+
+```
+Motive is allegedly on 192.168.42.5
+Local IP addresses are:
+0: fe80::ef0c:aeb:c098:60d9%20
+1: 192.168.42.79
+
+Error - It seems that you have more than 1 IP address on your computer.
+        Specify which one (0, 1, 2 ....) you want to use as your second input argument.
+        Motive and your computer should ideally be in the same subnet.
+```
+
+So, in this case, we know that `1` is in the same subnet as Motive, so you can run the code with:
+
+```
+./optitrack-motive-data-streamer 192.168.42.5 1
 ```
 
 You can control what is being streamed where with UDP packets containing unencrypted plain text string. The control packets are to be sent to port `64923` (this is hard-coded, sorry), see formatting below:
@@ -23,8 +42,8 @@ For example: you have te following rigid bodies in the system:
          ID:2   (bits_and_pieces):      XYZ: 0,82329357, 0,1755859, 0,008196899
 ```
 
-Say you want to stream the position and orientation to the rigid body `Rotator` to `192.168.31.10`, then from the slow computer that:
- * has the IP address of `192.168.31.10` and
+Say you want to stream the position and orientation to the rigid body `Rotator` to `192.168.42.79`, then from the slow computer that:
+ * has the IP address of `192.168.42.79` and
 * listens for packets on UDP port `24656` and
 * only can process a rate of 10 packets a second,
  ...a packet with the following payload would need to be sent:
@@ -38,12 +57,12 @@ If received, the main screen will show that there is a destination:
 ---------------------------------------
 
 UDP client: Sending data to 1 streaming destinations:
-         To: 192.168.31.10:24656, ID: 2510, decimation: 200
+         To: 192.168.42.79:24656, ID: 2510, decimation: 200
 ---------------------------------------
 Press Esc in this window to gracefully exit, or Ctrl+C in this window to rudely terminate.
 ```
 
-In response, this code, 10 times per second, will send a packet to `192.168.31.10:24656`, with the payload in the following format:
+In response, this code, 10 times per second, will send a packet to `192.168.42.79:24656`, with the payload in the following format:
 
 `<rigid_body_id>;<X>,<Y>,<Z>>;<QX>,<QY>,<QZ>,<QW>;<rigid_body_name>`
 
