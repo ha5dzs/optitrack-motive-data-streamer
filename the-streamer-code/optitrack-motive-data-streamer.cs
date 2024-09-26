@@ -59,8 +59,6 @@ public class OpitrackMotiveDataStreamer
     private static NatNetML.NatNetClientML natnet_client;
 
     // Connection details
-    private static string my_ip_address = "127.0.0.1"; // This is the computer's IP address this thing is running on
-    private static string server_ip_address = "127.0.0.1"; // Where Motive runs
     private static NatNetML.ConnectionType connection_type = ConnectionType.Multicast;
 
     // Data descriptor. Not sure yet what this does.
