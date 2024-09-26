@@ -2,13 +2,23 @@
 
 This code utilises [the NatNet SDK](https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-4.0), and makes a streaming system that is much more flexible than NatNet.
 
+## System requirements
+You need the .NET 8 runtime. You can install it in Terminal with:
+
+```powershell
+winget install Micosoft.Dotnet.Runtime.8 --disable-interactivity
+```
+(...and of course you need an Optitrack system, with Motive configured to stream using Multicast on a network adapter this code is running on...)
+
+## Usage
+
 You can start this by specifying the IP address of the computer Motive runs on as the input argument
 
 ```
 ./optitrack-motive-data-streamer 192.168.42.5
 ```
 
-If you have many local network cards, you may have many IP addresses. If you don't know which one to use, the code prints a list before running:
+If you have many local network adapters, or your system is configured to have both IPv6 and IPv4 addresses, you may have a selection of addresses to choose from. If you don't know which one to use, the code prints a list before running:
 
 ```
 Motive is allegedly on 192.168.42.5
