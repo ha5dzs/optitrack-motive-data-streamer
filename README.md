@@ -53,9 +53,11 @@ For example: you have te following rigid bodies in the system:
 ```
 
 Say you want to stream the position and orientation to the rigid body `Rotator` to `192.168.42.79`, then from the slow computer that:
- * has the IP address of `192.168.42.79` and
+
+* has the IP address of `192.168.42.79` and
 * listens for packets on UDP port `24656` and
 * only can process a rate of 10 packets a second,
+
  ...a packet with the following payload would need to be sent:
 ```
 2510;24656;20
