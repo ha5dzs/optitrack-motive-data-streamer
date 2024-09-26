@@ -6,7 +6,7 @@ This code utilises [the NatNet SDK](https://docs.optitrack.com/developer-tools/n
 You need the .NET 8 runtime. You can install it in Terminal with:
 
 ```powershell
-winget install Micosoft.Dotnet.Runtime.8 --disable-interactivity
+winget install Microsoft.Dotnet.Runtime.8 --disable-interactivity
 ```
 (...and of course you need an Optitrack system, with Motive configured to stream using Multicast on a network adapter this code is running on...)
 
