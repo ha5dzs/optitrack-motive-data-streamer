@@ -12,6 +12,8 @@ winget install Microsoft.Dotnet.Runtime.8 --disable-interactivity
 
 ## Usage
 
+**IMPORTANT:** Rigid body ID **0** is reserved to be the origin and 'which way is up' device, please do not use this ID in your tracking set-up. Motive rigid body IDs seem to be between 1 and 65535 by default, please stick to this convention. At the same time, you can use this while streaming rigid body information to dynamically align different coordinate systems.
+
 You can start this by specifying the IP address of the computer Motive runs on as the input argument
 
 ```

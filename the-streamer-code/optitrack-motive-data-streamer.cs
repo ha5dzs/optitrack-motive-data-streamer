@@ -320,6 +320,7 @@ public class OpitrackMotiveDataStreamer
 
                 past_time = current_time;
             }
+            
            
         }
        
@@ -451,22 +452,24 @@ public class OpitrackMotiveDataStreamer
         framecounter = data.iFrame;
 
         // Update the number of rigid bodies in the system
-        no_of_rigid_bodies_in_natnet = data.nRigidBodies;
+        no_of_rigid_bodies_in_natnet = data.nRigidBodies + 1; // Added an off-by-one error here, so we can have a dummy origin rigid body
 
         // Loop through the number of rigid bodies, and place the stuff where they belong.
-        for(int i = 0; i < no_of_rigid_bodies_in_natnet; i++)
+
+        // Same, off-by-one error introduced.
+        for (int i = 0; i < data.nRigidBodies; i++)
         {
-            shared_rigid_bodies[i].RigidBodyID = (UInt16)data.RigidBodies[i].ID;
-            shared_rigid_bodies[i].RigidBodyName = rigid_bodies[i].Name;
+            shared_rigid_bodies[i + 1].RigidBodyID = (UInt16)data.RigidBodies[i].ID;
+            shared_rigid_bodies[i + 1].RigidBodyName = rigid_bodies[i].Name;
             // Translation
-            shared_rigid_bodies[i].RigidBodyX = data.RigidBodies[i].x;
-            shared_rigid_bodies[i].RigidBodyY = data.RigidBodies[i].y;
-            shared_rigid_bodies[i].RigidBodyZ = data.RigidBodies[i].z;
+            shared_rigid_bodies[i + 1].RigidBodyX = data.RigidBodies[i].x;
+            shared_rigid_bodies[i + 1].RigidBodyY = data.RigidBodies[i].y;
+            shared_rigid_bodies[i + 1].RigidBodyZ = data.RigidBodies[i].z;
             // Rotation
-            shared_rigid_bodies[i].RigidBodyQX = data.RigidBodies[i].qx;
-            shared_rigid_bodies[i].RigidBodyQY = data.RigidBodies[i].qy;
-            shared_rigid_bodies[i].RigidBodyQZ = data.RigidBodies[i].qz;
-            shared_rigid_bodies[i].RigidBodyQW = data.RigidBodies[i].qw;
+            shared_rigid_bodies[i + 1].RigidBodyQX = data.RigidBodies[i].qx;
+            shared_rigid_bodies[i + 1].RigidBodyQY = data.RigidBodies[i].qy;
+            shared_rigid_bodies[i + 1].RigidBodyQZ = data.RigidBodies[i].qz;
+            shared_rigid_bodies[i + 1].RigidBodyQW = data.RigidBodies[i].qw;
         }
 
         mutex.ReleaseMutex();
