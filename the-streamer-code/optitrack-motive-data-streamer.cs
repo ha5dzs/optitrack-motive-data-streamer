@@ -2,6 +2,7 @@
  * In C#, everybody screams.
  * 
  * This code connects to the NatNet server, and creates another server.
+ * Yes, servers everywhere. Servers within servers.
  */
 
 using System;
@@ -15,7 +16,8 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.IO;
 
-using NatNetML; // This is local to the code's directory, see the .csproj file. You need to copy NatNetLib.dll too.
+using NatNetML;
+using System.ComponentModel.Design; // This is local to the code's directory, see the .csproj file. You need to copy NatNetLib.dll too.
 
 
 public class OpitrackMotiveDataStreamer
@@ -67,6 +69,7 @@ public class OpitrackMotiveDataStreamer
     // I will just concentrate on rigid bodies. We don't use skeletons or lone markers.
     private static Hashtable rigid_body_hashtable = new Hashtable();
     private static List<RigidBody> rigid_bodies = new List<RigidBody>();
+    
 
     // In this case, 'asset' can be literally anything, so I am keeping it for now.
     private static bool assets_changed = false;
@@ -237,7 +240,7 @@ public class OpitrackMotiveDataStreamer
 
 
                 // If we got here, we gracefully quit.
-                Console.Clear();
+                Console.WriteLine("\n\n\n");
                 Console.WriteLine("EExiting gracefully."); // Weird artifact in console. The first letter is chopped off. Don't know why, don't care why.
                 keep_thread_alive = false; // This makes the threads break out from their while loops
                 
@@ -271,9 +274,8 @@ public class OpitrackMotiveDataStreamer
 
             }
 
-
-
-
+            
+            
             // Update the screen once a second.
             while (past_time == current_time)
             {
@@ -292,7 +294,7 @@ public class OpitrackMotiveDataStreamer
 
                 for (int i = 0; i < no_of_rigid_bodies_in_natnet; i++)
                 {
-                    Console.WriteLine("\t ID:{0}\t({1}):\tXYZ: {2}, {3}, {4}", shared_rigid_bodies[i].RigidBodyID, shared_rigid_bodies[i].RigidBodyName,
+                   Console.WriteLine("{0}: ID:{1}\t({2}):\tXYZ: {3}, {4}, {5}", i, shared_rigid_bodies[i].RigidBodyID, shared_rigid_bodies[i].RigidBodyName,
                                                                              shared_rigid_bodies[i].RigidBodyX, shared_rigid_bodies[i].RigidBodyY, shared_rigid_bodies[i].RigidBodyZ);
                 }
                 Console.WriteLine("---------------------------------------");
@@ -408,9 +410,10 @@ public class OpitrackMotiveDataStreamer
         int numDataSet = description.Count;
         Console.WriteLine("Total {0} data sets in the capture:", numDataSet);
 
-
+        int rigid_body_string_pointer = 0;
         Console.WriteLine("Rigid bodies:");
-        for (int i = 0; i < numDataSet; ++i)
+        mutex.WaitOne();
+        for (int i = 0; i < numDataSet; ++i) //Why pre-increment?
         {
             // We go through everything that is being streamed, and display the rigid body names and IDs.
             int dataSetType = description[i].type;
@@ -420,13 +423,16 @@ public class OpitrackMotiveDataStreamer
             {
                 // Apparently, this is going to be 5.
                 NatNetML.RigidBody rb = (NatNetML.RigidBody)description[i];
-                Console.WriteLine("\t{0}, id:{1}", rb.Name, rb.ID);
+                Console.WriteLine("  {0} -> {1}, id:{2}", rigid_body_string_pointer, rb.Name, rb.ID);
                 // Saving Rigid Body Descriptions
                 rigid_bodies.Add(rb);
+                rigid_body_string_pointer++;
+
 
 
             }
         }
+        mutex.ReleaseMutex();
     }
 
     // This function processes the network thread in the background to the NatNet server
@@ -460,9 +466,32 @@ public class OpitrackMotiveDataStreamer
         for (int i = 0; i < data.nRigidBodies; i++)
         {
             shared_rigid_bodies[i + 1].RigidBodyID = (UInt16)data.RigidBodies[i].ID;
-            shared_rigid_bodies[i + 1].RigidBodyName = rigid_bodies[i].Name;
-            // Translation
-            shared_rigid_bodies[i + 1].RigidBodyX = data.RigidBodies[i].x;
+
+            /*
+             * This must be a 'bug' in NatNet:
+             * The order in the data descriptor is not the same as in the data frame.
+             * So, to match the correct rigid body string to the ID to be shared, we need to find it manually.
+             * We always have a match, unless the assets changed mid-stream.
+             */
+            if (!assets_changed)
+            {
+                for (int j = 0; j < data.nRigidBodies; j++)
+                {
+                    if (data.RigidBodies[i].ID == rigid_bodies[j].ID)
+                    {
+                        shared_rigid_bodies[i + 1].RigidBodyName = rigid_bodies[j].Name;
+                    }
+                }
+            }
+            else
+            {
+                // If we got here, we mask the changes until they are processed
+                shared_rigid_bodies[i + 1].RigidBodyName = "Assets changed, updating....";
+            }
+
+
+                // Translation
+                shared_rigid_bodies[i + 1].RigidBodyX = data.RigidBodies[i].x;
             shared_rigid_bodies[i + 1].RigidBodyY = data.RigidBodies[i].y;
             shared_rigid_bodies[i + 1].RigidBodyZ = data.RigidBodies[i].z;
             // Rotation
