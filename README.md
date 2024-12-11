@@ -130,7 +130,8 @@ I got angry because I found it too difficult to process this:
 I understand that Motive is made for some media production people. But me, as a researcher, I couldn't care less about what markers consist of my rigid body, or what is the exposure value in camera #6 mid-frame. I think, deep down somewhere at NaturalPoint, they realise this too, so they made the NatNet SDK relatively easy to adapt. But, then again, since they only distribute binaries for certain limited number of platforms, I cannot use it on most of my devices. And what devices those are, you might ask?
 
 * Android VR headsets (Oculus Quest, Google Cardboard, and some Chinese internal market devices I may get in the future)
-* Unsupported platforms and game engines (say GDevelop on Haiku OS, Quake engine on Palm OS)
+* Game consoles (PS with VR headset, Nintendo Switch maybe)
+* Unsupported platforms and game engines usually very few people care about (say GDevelop on Haiku OS, Quake engine on Palm OS)
 * Embedded and/or legacy devices (Arduino, ESP-IDF, some old IBM PC/AT with Ethernet card)
 * Linux (in practically any flavour)
 * Data-centric languages such as R (to access real-time data)
