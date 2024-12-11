@@ -67,7 +67,6 @@ public class OpitrackMotiveDataStreamer
     private static List<NatNetML.DataDescriptor> data_dscriptor = new List<NatNetML.DataDescriptor>();
 
     // I will just concentrate on rigid bodies. We don't use skeletons or lone markers.
-    private static Hashtable rigid_body_hashtable = new Hashtable();
     private static List<RigidBody> rigid_bodies = new List<RigidBody>();
     
 
@@ -144,6 +143,10 @@ public class OpitrackMotiveDataStreamer
         string this_computer_s_ip = this_computer_s_ip_addresses[which_ip_address_to_use_if_we_have_many].ToString();
 
 
+        // Set culture info for the console, so that the number format will be the same as in the packets.
+        Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+
+
         long current_time = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); // Current unix time.
         long past_time = 0; // Previous unix time.
 
@@ -166,14 +169,6 @@ public class OpitrackMotiveDataStreamer
             rigid_body_info_to_send[i] = new DataToSendRegister { IDToSend = 0, DestinationIP = "127.0.0.1", DestinationPort = 0, Decimation = 0};
         }
 
-
-        
-        
-
-
-
-        
-        
 
         NatNetML.ConnectionType connection_type_to_motive = ConnectionType.Multicast;
 
@@ -294,7 +289,8 @@ public class OpitrackMotiveDataStreamer
 
                 for (int i = 0; i < no_of_rigid_bodies_in_natnet; i++)
                 {
-                   Console.WriteLine("{0}: ID:{1}\t({2}):\tXYZ: {3}, {4}, {5}", i, shared_rigid_bodies[i].RigidBodyID, shared_rigid_bodies[i].RigidBodyName,
+                    // Net up formatting a bit, so the numbers won't jump that much.
+                    Console.WriteLine("{0,3:0}->ID:{1, -5:0}\t|{2, 29:0,10} | XYZ: {3,1:F10}, {4,1:F10}, {5,1:F10}", i, shared_rigid_bodies[i].RigidBodyID, shared_rigid_bodies[i].RigidBodyName,
                                                                              shared_rigid_bodies[i].RigidBodyX, shared_rigid_bodies[i].RigidBodyY, shared_rigid_bodies[i].RigidBodyZ);
                 }
                 Console.WriteLine("---------------------------------------");
@@ -490,8 +486,8 @@ public class OpitrackMotiveDataStreamer
             }
 
 
-                // Translation
-                shared_rigid_bodies[i + 1].RigidBodyX = data.RigidBodies[i].x;
+            // Translation
+            shared_rigid_bodies[i + 1].RigidBodyX = data.RigidBodies[i].x;
             shared_rigid_bodies[i + 1].RigidBodyY = data.RigidBodies[i].y;
             shared_rigid_bodies[i + 1].RigidBodyZ = data.RigidBodies[i].z;
             // Rotation
@@ -506,7 +502,9 @@ public class OpitrackMotiveDataStreamer
         
     }
 
-    static void proceFrameData(NatNetML.FrameOfMocapData data)
+
+    // This remained from the demo, it is not used. I use this to remember things.
+    static void processFrameData(NatNetML.FrameOfMocapData data)
     {
         /*  Parsing Rigid Body Frame Data   */
         for (int i = 0; i < rigid_bodies.Count; i++)
@@ -595,11 +593,25 @@ public class OpitrackMotiveDataStreamer
     }
 
 
-        /*
-        * This function waits for the instructions on the UDP port, and then parses the received information
-        * If everything went well, it updates the rigid_body_info_to_send array.
-        * This writes into the where to send data array. That needs mutex'd.
-        */
+    /*
+     * Get the current unix time in milliseoconds.
+     * Return it as string.
+     */
+    static public string unix_time_now_in_ms()
+    {
+        // Get the UTC time now
+        DateTimeOffset time_now = DateTimeOffset.UtcNow;
+        // Convert it to milliseconds
+        long the_time = time_now.ToUnixTimeMilliseconds();
+        // Format it into a string
+        return the_time.ToString();
+    }
+
+    /*
+    * This function waits for the instructions on the UDP port, and then parses the received information
+    * If everything went well, it updates the rigid_body_info_to_send array.
+    * This writes into the where to send data array. That needs mutex'd.
+    */
     public static void WaitForInstructions()
     {
         while (keep_thread_alive == true)
@@ -797,16 +809,17 @@ public class OpitrackMotiveDataStreamer
                             /*
                             * For simplicity, every value will be human-readable string. So one can literally read these on the network.
                             * Format is:
-                            * <RigidBodyID>;<X,Y,Z>;<Qx,Qy,Qz,Qw>;<Name><0x0A>
+                            * <unix time>;<RigidBodyID>;<X,Y,Z>;<Qx,Qy,Qz,Qw>;<Name><0x0A>
                             * Note that the separator is a semicolon, so I can toss vectors easier. Decimal separator is a dot.
                             */
 
                             // my regional settings is not US, and we don't use a point to mark decimals. Here is a workaround for that.
-                            string string_to_send = string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US"), "{0};{1},{2},{3};{4},{5},{6},{7};{8}\n",
-                                                                    shared_rigid_bodies[j].RigidBodyID,
-                                                                    shared_rigid_bodies[j].RigidBodyX, shared_rigid_bodies[j].RigidBodyY, shared_rigid_bodies[j].RigidBodyZ,
-                                                                    shared_rigid_bodies[j].RigidBodyQX, shared_rigid_bodies[j].RigidBodyQY, shared_rigid_bodies[j].RigidBodyQZ, shared_rigid_bodies[j].RigidBodyQW,
-                                                                    shared_rigid_bodies[j].RigidBodyName);
+                            string string_to_send = string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US"), "{0};{1};{2,0:F10},{3,0:F10},{4,0:F10};{5,0:F10},{6,0:F10},{7,0:F10},{8,0:F10};{9}\n",
+                                                                    unix_time_now_in_ms(), // {0}
+                                                                    shared_rigid_bodies[j].RigidBodyID, // {1}
+                                                                    shared_rigid_bodies[j].RigidBodyX, shared_rigid_bodies[j].RigidBodyY, shared_rigid_bodies[j].RigidBodyZ, // {2}, {3}, {4}
+                                                                    shared_rigid_bodies[j].RigidBodyQX, shared_rigid_bodies[j].RigidBodyQY, shared_rigid_bodies[j].RigidBodyQZ, shared_rigid_bodies[j].RigidBodyQW, // {5}, {6}, {7}, {8}
+                                                                    shared_rigid_bodies[j].RigidBodyName); // {9}
 
                             byte[] datagram_to_send = Encoding.ASCII.GetBytes(string_to_send);
 

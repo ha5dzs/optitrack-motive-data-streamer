@@ -43,15 +43,18 @@ You can control what is being streamed where with UDP packets containing unencry
 
 `<rigid_body_id_in_motive>;<udp_port_to_stream_to>;<decimation>`
 
-The first two parts are self-explanatory. The third part, `decimation` is a number that reduces the packet rate, it only sends a packet at every N frames. So if your system runs at 200 frames per second, but your gadget can only process data at say 10 frames per second, there is no point in flooding its buffer until it crashes. So, by specifying `decomation` as `20`, it will only send a packet every twentieth received frame.
+The first two parts are self-explanatory. The third part, `decimation` is a number that reduces the packet rate, it only sends a packet at every N frames. So if your system runs at 200 frames per second, but your gadget can only process data at say 10 frames per second, there is no point in flooding its buffer until it crashes. So, by specifying `decimation` as `20`, it will only send a packet every twentieth received frame.
 
 For example: you have te following rigid bodies in the system:
 ```
-2425921 - NatNet has 4 rigid bodies, streaming at 200 frames per second:
-         ID:2501        (Cylinder):     XYZ: 0,57740664, 1,2066058, 0,14536819
-         ID:2509        (Surface):      XYZ: 0,953681, 0,25161505, 0,00040242076
-         ID:2510        (Rotator):      XYZ: 0,5918385, 0,20872128, 0,34499633
-         ID:2   (bits_and_pieces):      XYZ: 0,82329357, 0,1755859, 0,008196899
+1621084 - NatNet has 7 rigid bodies, streaming at 200 frames per second:
+  0->ID:0       | Blank placeholder rigid body | XYZ: 0.0000000000, 0.0000000000, 0.0000000000
+  1->ID:1       |                      Surface | XYZ: 0.6774949431, 0.6926476359, 0.3122268021
+  2->ID:2501    |                      Rotator | XYZ: 0.5755438209, 1.2072927952, 0.1428148896
+  3->ID:1010    |                     40mmBall | XYZ: 0.5761445165, 0.0061757602, 0.0606316924
+  4->ID:2502    |                     Cylinder | XYZ: 0.9470402002, 0.4255036414, -0.0000407547
+  5->ID:1000    |                 pingpongball | XYZ: 0.9443528652, 0.4225618243, 0.1033023372
+  6->ID:2       |                        Probe | XYZ: 0.0739784390, 0.2713069022, 0.0182296894
 ```
 
 Say you want to stream the position and orientation to the rigid body `Rotator` to `192.168.42.79`, then from the slow computer that:
@@ -78,13 +81,15 @@ Press Esc in this window to gracefully exit, or Ctrl+C in this window to rudely 
 
 In response, this code, 10 times per second, will send a packet to `192.168.42.79:24656`, with the payload in the following format:
 
-`<rigid_body_id>;<X>,<Y>,<Z>>;<QX>,<QY>,<QZ>,<QW>;<rigid_body_name>`
+`<unix_time_in_milliseconds>;<rigid_body_id>;<X>,<Y>,<Z>>;<QX>,<QY>,<QZ>,<QW>;<rigid_body_name>`
 
 Like so:
 
 ```
-2510;0.59184,0.20873211,0.34497538;0.7072783,-0.0068869404,-0.020055031,0.7066172;Rotator
+1733919415582;2501;0.5755411386,1.2072962523;0.1428148746,0.0000852876,-0.0000512312,0.0000566755;1.0000000000;Rotator
 ```
+
+The timestamp is unix time, but with millisecond precision. This is there so you could check when the packets were sent, so you could choose the latest ones.
 
 The rigid body ID is an integer. The X-Y-Z coordinates are floating point numbers, as is the rotation quaternion. The fields are separated with a semicolon (`;`), but corresponding elements are separated with a comma `,`. The decimals are separated with a decimal point `.`, irrespective of what regional settings are set.
 

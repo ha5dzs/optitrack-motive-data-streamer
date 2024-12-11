@@ -11,3 +11,5 @@ build_property.RootNamespace = optitrack_motive_data_streamer
 build_property.ProjectDir = C:\Users\ha5dzs\optitrack-motive-data-streamer\the-streamer-code\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 

@@ -1,4 +1,4 @@
-# Matlab example
+# `udp_send_and_receive_test.m`
 
 This was made in R2024a, with the 'new' `udpport` function.
 
