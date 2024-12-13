@@ -86,8 +86,8 @@ public class OpitrackMotiveDataStreamer
         // Do we even have an input argument?
         if (input_arguments.Length < 1)
         {
-            Console.WriteLine("Please specify at least 1 input argument, which should be the IP address Motive is running on. Defaulting to 127.0.0.1. Maybe it will work?");
-            
+            Console.WriteLine("Please specify at least 1 input argument, which should be the IP address Motive is running on.");
+            return;
         }
 
         // Is it an IPv4 thing?
