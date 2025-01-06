@@ -7,3 +7,7 @@ Every example here revolves around the following:
 * Parse the contents of the received packet, if necessary.
 
 See the directories here. Note that the examples are not EXACTLY the same. Some have more, some have less error management. The idea is, that it allows you to develop your own code with it.
+
+There are two implementations:
+
+ * `streamer_client_script.cs` is the simplest one, but it blocks execution. So if you have issues with lost packets or performance issues with the server, your application will freeze. If you are developing for VR, then this is not a good option.

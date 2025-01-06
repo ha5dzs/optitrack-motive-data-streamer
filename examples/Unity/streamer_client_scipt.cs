@@ -88,22 +88,22 @@ public class streamer_client_scipt : MonoBehaviour
 
         string[] separated_string = received_payload_as_string.Split(";");
 
-        if (separated_string.Length != 4)
+        if (separated_string.Length != 5)
         {
-            Debug.LogError("The number of fields when parsing the payload is not 4. Cannot continue.");
+            Debug.LogError("The number of fields when parsing the payload is not 5. Cannot continue.");
             return;
         }
 
-        string rigid_body_name_string = separated_string[3].Replace("\n", string.Empty);
+        string rigid_body_name_string = separated_string[4].Replace("\n", string.Empty);
 
-        uint rigid_body_id_extracted_from_separated_string = uint.Parse(separated_string[0]);
+        uint rigid_body_id_extracted_from_separated_string = uint.Parse(separated_string[1]);
 
         if (rigid_body_id_extracted_from_separated_string == rigidBodyIDYouWantToTrack)
         {
             // If we have the correct one, then:
 
             // Extract the translation coordinates
-            string[] translation_as_string = separated_string[1].Split(",");
+            string[] translation_as_string = separated_string[2].Split(",");
             if (translation_as_string.Length != 3)
             {
                 Console.WriteLine("Something is wrong with the formatting of the translation coordinates, could not split it into numbers.");
@@ -127,7 +127,7 @@ public class streamer_client_scipt : MonoBehaviour
 
 
             // Extract the orientation
-            string[] quaternion_as_string = separated_string[2].Split(",");
+            string[] quaternion_as_string = separated_string[3].Split(",");
             if (quaternion_as_string.Length != 4)
             {
                 Console.WriteLine("Something is wrong with the formatting of the quaternion, could not split it into numbers.");
@@ -162,7 +162,7 @@ public class streamer_client_scipt : MonoBehaviour
                 // If required, update the game object name
                 if (useRigidBodyNameAsGameObjectName)
                 {
-                    if (separated_string[3].Length != 0)
+                    if (separated_string[4].Length != 0)
                     {
                         // If we got here, we have a rigid body name. Remove the \n bit
                         transform.name = separated_string[3].Replace("\n", String.Empty);
