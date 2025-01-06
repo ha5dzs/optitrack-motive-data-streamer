@@ -156,8 +156,3 @@ In the main thread, the console is initially set to display some diagnostic info
 ## Caveats and results
 
 I set this up for a bunch of demos in the lab, so that we can measures latency. Turned out that I didn't actually need to measure anything - when it works, there is no noticeable latency. Tested it with our Quest VR headsets, and on a GPD Win Max running Windows and Unity.
-
-TODOs are:
-
-* Add timestamping to the frames when multiple frames are in the buffer. Update scripts to select the latest frame only.
-* Add a fall-back system when there is no packet coming in, or there is a timeout, so that the game engine will not hang (mostly on Windows)

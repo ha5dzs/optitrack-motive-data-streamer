@@ -14,7 +14,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading;
 
-public class streamer_client_scipt : MonoBehaviour
+public class NewMonoBehaviourScript : MonoBehaviour
 {
 
     /*
@@ -27,7 +27,7 @@ public class streamer_client_scipt : MonoBehaviour
     public bool useRandomListeningPortForEachInstanceOfThisScript = true;
     public int decimation = 3;
     public bool swapYandZCoordinates = false;
-    public int rigidBodyIDYouWantToTrack = 2510;
+    public int rigidBodyIDYouWantToTrack = 2501;
     public bool useRigidBodyNameAsGameObjectName = false;
 
     // Not sure what is the difference between Unity's random number generator and the Microsoft-provided random number generator.
@@ -36,10 +36,12 @@ public class streamer_client_scipt : MonoBehaviour
 
     UdpClient udp_client = new UdpClient();
 
-    // Start is called before the first frame update
+    // This will be written to using receive_message(). But, in case nothing comes in, this is a placeholder
+    private static string received_payload_as_string;
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
         // set culture info. This is required for the decimal formatting.
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
         Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
@@ -49,7 +51,7 @@ public class streamer_client_scipt : MonoBehaviour
         if (useRandomListeningPortForEachInstanceOfThisScript)
         {
             // If we got here, assign a new random number for the listening port.
-            listeningPort = rng.Next(listeningPort, listeningPort+200);
+            listeningPort = rng.Next(listeningPort, listeningPort + 200);
         }
 
         udp_client = new UdpClient(listeningPort); // Change where we listen
@@ -69,23 +71,28 @@ public class streamer_client_scipt : MonoBehaviour
         // No try-catch here, I want this to fail
         udp_client.Send(payload_to_send, payload_to_send.Length, streamerServerAddress, streamerServerPort);
 
+        // Create the asyncronous call to receive_message()
+        udp_client.BeginReceive(new AsyncCallback(receive_message), udp_client);
+
+        /*
+         * I know you are lazy when it somes to reading docs, so here is a tl;dr for you:
+         * - 17361661920000 is the unix time stamp, with millisecond precision. Not used here.
+         * - 2501 is the rigid body ID. Valid values are 1 to 65535.
+         * - 0, 0, 0, are the XYZ coordinates of the rigid body, in metres.
+         * - 0, 0, 0, 1 are rotation, in QxQyQzQw quaternion format
+         * - NoDataReceivedYet is the name of the object.
+         * Fields are separated with a semicolon (;), and the end is terminated with a newline (0x0a, or \n)
+         * 
+         * This variable is overwritten by receive_message() whenever a packet comes in, and
+         * the contents of this string are being parsed in Update(). 
+         * 
+         */
+        received_payload_as_string = "17361661920000;2501;0,0,0;0,0,0,1;NoDataReceivedYet\n";
     }
 
     // Update is called once per frame
     void Update()
     {
-        /*
-         * Receive data
-         */
-
-        // I am not sure if I have a choice here, not sure how much will this hit performance.
-        IPEndPoint ip_endpoint = new IPEndPoint(IPAddress.Parse(streamerServerAddress), listeningPort);
-
-        // I should add a timeout exception handling here, because it can totally stall the render loop.
-        Byte[] received_payload = udp_client.Receive(ref ip_endpoint);
-
-        string received_payload_as_string = Encoding.ASCII.GetString(received_payload);
-
         string[] separated_string = received_payload_as_string.Split(";");
 
         if (separated_string.Length != 5)
@@ -177,7 +184,7 @@ public class streamer_client_scipt : MonoBehaviour
             }
 
             // Update the parent object's coordinates.
-            if(swapYandZCoordinates)
+            if (swapYandZCoordinates)
             {
                 // If we got here, we are swapping Y and Z.
                 transform.position = new UnityEngine.Vector3(translation_x, translation_z, translation_y);
@@ -191,13 +198,8 @@ public class streamer_client_scipt : MonoBehaviour
 
         }
 
-
-
     }
 
-    /*
-     * This function closes the streaming, when the game object is being destroyed.
-     */
     void OnDestroy()
     {
 
@@ -219,11 +221,35 @@ public class streamer_client_scipt : MonoBehaviour
      * This function calls OnDestroy(), when the application quits, to tell the server to stop streaming data.
      */
 
-    void OnApplicationQuit()
+        void OnApplicationQuit()
     {
         // See above what this does.
         OnDestroy();
 
     }
+
+
+    // This function gets executed when there is a packet in the buffer.
+    // Original code: https://yal.cc/cs-dotnet-asynchronous-udp-example/
+    void receive_message(IAsyncResult result)
+    {
+        UdpClient socket = result.AsyncState as UdpClient; // set the client to be asynchronous maybe?
+
+        IPEndPoint ip_endpoint = new IPEndPoint(IPAddress.Parse(streamerServerAddress), streamerServerPort); // Accept packets only from the server.
+
+        // Apparently there is a bug in Unity, see, from 2010. Hopefully fixed. :)
+        // https://discussions.unity.com/t/udp-receive-problems-v2-beginreceive-and-endreceive/410064
+
+
+        byte[] received_payload = socket.EndReceive(result, ref ip_endpoint);
+
+        received_payload_as_string = Encoding.ASCII.GetString(received_payload);
+
+        // Once the transfer is done, restart the receive process again.
+        socket.BeginReceive(new AsyncCallback(receive_message), socket);
+
+    }
+
+
 
 }

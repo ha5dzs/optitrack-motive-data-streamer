@@ -10,4 +10,5 @@ See the directories here. Note that the examples are not EXACTLY the same. Some 
 
 There are two implementations:
 
- * `streamer_client_script.cs` is the simplest one, but it blocks execution. So if you have issues with lost packets or performance issues with the server, your application will freeze. If you are developing for VR, then this is not a good option.
+* `streamer_client_script.cs` is the simplest one, but it blocks execution. So if you have issues with lost packets or performance issues with the server, your application will freeze. If you are developing for VR, then this is not a good option.
+* `streamer_client_script_async.cs` is the non-blocking version, best suited for VR. Tested on Oculus/Meta android headsets.
