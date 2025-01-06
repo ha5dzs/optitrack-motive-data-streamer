@@ -2,7 +2,10 @@
 
 This code utilises [the NatNet SDK](https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-4.0), and makes a streaming system that is much more flexible than NatNet.
 
+Once the server is running and configured with the appropriate input arguments, you can request a particular rigid body data in a plain text and easily parsable format to the UDP port of your choice. You can also control how often should these packets be sent to you.
+
 ## System requirements
+
 You need the .NET 8 runtime. You can install it in Terminal with:
 
 ```powershell
