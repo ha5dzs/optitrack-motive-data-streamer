@@ -2,6 +2,8 @@
 
 This code utilises [the NatNet SDK](https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-4.0), and makes a streaming system that is much more flexible than NatNet.
 
+**NOTE: This is intended for research and not for production environment. There is no security or encryption of any kind implemented.**
+
 Once the server is running and configured with the appropriate input arguments, you can request a particular rigid body data in a plain text and easily parsable format to the UDP port of your choice. You can also control how often should these packets be sent to you.
 
 ## System requirements
