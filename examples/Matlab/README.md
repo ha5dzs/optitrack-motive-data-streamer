@@ -28,6 +28,8 @@ then you can process it to taste.
 
 This is a Matlab class that generates an object. When initialising this object, you can specify which rigid body to stream, how often you want to get updates. When the object is created, it will store the streamed packets in its buffer. You can request the latest data, or everything in the buffer. The code was written such that Matlab's internal documentation creator, which you can access by typing `doc volciclab_optitrack_streamer` in the command window.
 
+You can make a separate object for every rigid body you want in order. You can even set up different objects for the same rigid body. It's all local within the class, and is accessible through the object you created.
+
 ## Usage
 
 ### Initialisation
