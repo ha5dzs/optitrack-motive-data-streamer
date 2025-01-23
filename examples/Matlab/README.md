@@ -92,7 +92,10 @@ rigid_body_name =
 >>
 ```
 
-`unix_time` is the timestamp in milliseconds, `translation` is the X-Y-Z coordinates, `quaternion` is the Qx Qy Qz Qw orientation of the object. `rigid_body_name` is the name as it was specified in Motive.
+* `unix_time` is the timestamp in milliseconds,
+* `translation` is the X-Y-Z coordinates,
+* `quaternion` is the Qx Qy Qz Qw orientation of the object,
+* `rigid_body_name` is the name as it was specified in Motive.
 
 ### Getting the complete contents of the buffer
 
