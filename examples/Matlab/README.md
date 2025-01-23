@@ -39,7 +39,7 @@ You can make a separate object for every rigid body you want in order. You can e
 
 ### Initialisation
 
-Let's say you want access to rigid body ID 1010. Your motion tracker operates at 200 Hz sampling rate, and you want to get information about the whereabouts of the object no older than 100 millisconds. So the decimation will be 20.
+Let's say you want access `rigid_body_id` `1010`. Your motion tracker operates at 200 Hz sampling rate, and you want to get information about the whereabouts of the object no older than 100 milliseconds. So the `decimation` will be `20`.
 
 So you can:
 
