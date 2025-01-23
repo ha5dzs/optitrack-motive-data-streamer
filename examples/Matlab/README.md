@@ -105,11 +105,11 @@ rigid_body_name =
 [unix_time, translation, quaternion, rigid_body_name] = my_fancy_rigid_body.get_everything
 ```
 
-This is the same as `<your_object>.get_latest`, but the functions return every parsed packet in the buffer, and for N frames received, it returns:
+This is the same as `<your_object>.get_latest`, but the functions return every parsed packet in the buffer, and for `N` frames received, it returns:
 
- * `unix_time` as an N-element vector
- * `translation` as an Nx3 element matrix, with the X-Y-Z coordinates being in triplets
- * `quaternion` as an Xx4 element matrix, with the QxQyQzQw being in quadruplets
+ * `unix_time` as an `N`-element vector
+ * `translation` as an `N`x3 element matrix, with the X-Y-Z coordinates being in triplets
+ * `quaternion` as an `N`x4 element matrix, with the QxQyQzQw being in quadruplets
  * `rigid_body_name` as a string.
 
  ### Other controls
