@@ -33,18 +33,25 @@ classdef volciclab_optitrack_streamer
     properties (SetAccess = immutable)
         udp_object % This is the OS network socket interface
         rigid_body_id % This is set in Motive. From 0 to 65535
-        decimation % Send packets N frames. Set this to 1 to get every frame's data
-        options % Override the default IP addresses and ports. See file for default values.
+        decimation % Send packets every N frames. Set this to 1 to get every frame's data
+        options % Override the default IP addresses and ports. See this file for default values.
     end
     % From: https://stackoverflow.com/questions/14057308/matlab-class-destructor-not-called-during-clear
     properties (Hidden)
         cleanup
     end
+    % Operation variables for the class. get_latest() will update these.
+    properties
+        unix_time_stamp = 0; % Unix time when get_latest() was called the last time, in milliseconds.
+        translation = [0, 0, 0]; % The whereabouts of the object, when get_latest() was called the last time.
+        quaternion = [0, 0, 0, 1]; % The orientation of the object, when get_latest() was called the last time.
+        rigid_body_name = 'dummy_placeholder'; % The name of the object, when get_latest() was called the last time.
+    end
 
     methods
         %% Constructor function: Create the object and start the streaming.
         function object_to_be_put_out = volciclab_optitrack_streamer(rigid_body_id, decimation, options)
-            % This is the constructor function. This creates the return object, which is needed for every other method to operate correctly.
+            % This is the constructor function. This creates the return object with all the data and settings.
             % At the very least, specify these input arguments:
             %   -rigid_body_id, which is a number between 0 and 65535, as you set it in Motive
             %   -decimation, which makes the streaming server send a packet to the client every N frames.
@@ -60,6 +67,7 @@ classdef volciclab_optitrack_streamer
             %   -'ReceivePort' is the UDP port where the streaming server sends data to. It starts from 64923,
             %       and keeps increasing when it finds that the ports are in use by something else.
             % Once the ebject is created, these are set as 'properties', and are immutable.
+            % It also waits for the server to send the requested packet, and saves the rigid body information inside the object.
 
             % Begin processing the arguments
             arguments
@@ -71,7 +79,7 @@ classdef volciclab_optitrack_streamer
             end
             
             if(nargin < 2)
-                error("volciclab_optitrack_streamer::ConstructorDesign(): At the very least, specify the digid body ID and the decimation.")
+                error("volciclab_optitrack_streamer(): At the very least, specify the digid body ID and the decimation.")
             end
             
             % Sanity checks.
@@ -79,41 +87,41 @@ classdef volciclab_optitrack_streamer
             % Sanity checks: Rigid body
             if(length(rigid_body_id) ~= 1)
                % Is this a single value?
-               error("volciclab_optitrack_streamer::ConstructorDesign(): The rigid body ID must be a single value.");
+               error("volciclab_optitrack_streamer(): The rigid body ID must be a single value.");
             end
             if(~isnumeric(rigid_body_id))
                % Is this a number?
-               error("volciclab_optitrack_streamer::ConstructorDesign(): The rigid body ID must be a number")
+               error("volciclab_optitrack_streamer(): The rigid body ID must be a number")
             end                
             if(round(rigid_body_id) ~= rigid_body_id)
                % Is this a round number?
-               error("volciclab_optitrack_streamer::ConstructorDesign(): The rigid body ID must be an integer.")
+               error("volciclab_optitrack_streamer(): The rigid body ID must be an integer.")
             end
             if( (rigid_body_id > 65536) || (rigid_body_id < 0) )
                % Is the value valid in range?
-               error("volciclab_optitrack_streamer::ConstructorDesign(): The rigid body ID must be between 0 and 65535.");
+               error("volciclab_optitrack_streamer(): The rigid body ID must be between 0 and 65535.");
             end
             if(rigid_body_id == 0)
                % Is the origin marker being requested?
-               warning("volciclab_optitrack_streamer::ConstructorDesign(): You are requesting rigid body ID 0, which is hard-coded to tbe the origin marker.")
+               warning("volciclab_optitrack_streamer(): You are requesting rigid body ID 0, which is hard-coded to tbe the origin marker.")
             end
             
             % Sanity checks: decimation
             if(length(decimation) ~= 1)
                % Is this a single value?
-               error("volciclab_optitrack_streamer::ConstructorDesign(): The decimation must be a single value.");
+               error("volciclab_optitrack_streamer(): The decimation must be a single value.");
             end
             if(~isnumeric(decimation))
                % Is this a number?
-               error("volciclab_optitrack_streamer::ConstructorDesign(): The decimation value must be a number")
+               error("volciclab_optitrack_streamer(): The decimation value must be a number")
             end                
             if(round(decimation) ~= decimation)
                % Is this a round number?
-               error("volciclab_optitrack_streamer::ConstructorDesign(): The decimation value must be an integer.")
+               error("volciclab_optitrack_streamer(): The decimation value must be an integer.")
             end
             if(decimation < 1)
                % Is the value valid in range?
-               error("volciclab_optitrack_streamer::ConstructorDesign(): The decimation value must be at least 1. 0 means no data being sent.");
+               error("volciclab_optitrack_streamer(): The decimation value must be at least 1. 0 means no data being sent.");
             end
     
             % Save these to the return object.
@@ -135,7 +143,7 @@ classdef volciclab_optitrack_streamer
                     search_for_acceptable_port = true; % If we got here, we need to repeat trying to create the UDP object.
     
                     if(options.ReceivePort > 65535)
-                        error("volciclab_optitrack_streamer::ConstructorDesign(): It seems that you ran out of ports that the UDP object can use.")
+                        error("volciclab_optitrack_streamer(): It seems that you ran out of ports that the UDP object can use.")
                     end
                 end
     
@@ -146,11 +154,27 @@ classdef volciclab_optitrack_streamer
             udp_payload = sprintf('%d;%d;%d', rigid_body_id, options.ReceivePort, decimation);
             object_to_be_put_out.udp_object.flush; % % Empty the buffer, just in case.
             
-            % ...and finally, send.
+            % ...Send the request
             write(object_to_be_put_out.udp_object, udp_payload, options.ServerIP, options.ServerPort);
 
             % This is an event listerer. If the object gets destroyed, it will send the server a command to stop streaming.
             object_to_be_put_out.cleanup = onCleanup(@()delete(object_to_be_put_out));
+
+            % Wait for some data to come in.
+            tic;
+            throw_warning = false; % Bunch of semaphores.
+            while(object_to_be_put_out.udp_object.NumBytesAvailable < 10)
+                % If we got here, we are waiting for the streaming server to respond.
+                elapsed_time = toc;
+                if(throw_warning == false && elapsed_time > 5)
+                    throw_warning = true;
+                    warning("volciclab_optitrack_streamer(): No response from server in 5 seconds. If you use high decimation this may be expected, but you may have a network problem.")
+                end
+            end
+
+            % Fill up the temporary data.
+            [object_to_be_put_out.unix_time_stamp, object_to_be_put_out.translation, object_to_be_put_out.quaternion, object_to_be_put_out.rigid_body_name] = get_latest(object_to_be_put_out);
+
         end
         %% Stop function.
         function stop(volciclab_optitrack_streamer)
@@ -181,10 +205,18 @@ classdef volciclab_optitrack_streamer
             % After the execution, it flushes the buffer. This meanss that:
             %   - Any data before the latest is being lost
             %   - If there is nothing available in the buffer, the function will just return without doing anything.
+            % IMPORTANT:
+            %   When you call this function more often than how fast packets are coming in,
+            %   it will return the latest received data. You will not get any warnings about this.
+            %   So if your rigid body gets stuck in the same position suddenly, you may have a network problem.
             if(volciclab_optitrack_streamer.udp_object.NumBytesAvailable > 10) % At least something should be in here, right?
-                    received_data = read(volciclab_optitrack_streamer.udp_object, volciclab_optitrack_streamer.udp_object.NumBytesAvailable, 'string');
+                received_data = read(volciclab_optitrack_streamer.udp_object, volciclab_optitrack_streamer.udp_object.NumBytesAvailable, 'string');
             else
-                % Do not update anything, just return.
+                % This is a fallback mode. If nothing is received, then return whatever was saved interally.
+                unix_time_stamp = volciclab_optitrack_streamer.unix_time_stamp;
+                translation = volciclab_optitrack_streamer.translation;
+                quaternion = volciclab_optitrack_streamer.quaternion;
+                rigid_body_name = volciclab_optitrack_streamer.rigid_body_name;
                 return
             end
 
@@ -244,6 +276,13 @@ classdef volciclab_optitrack_streamer
                           str2double(quaternion_as_string_array{2}), ...
                           str2double(quaternion_as_string_array{3}), ...
                           str2double(quaternion_as_string_array{4})];
+
+
+            % Save this to the object too, so this will be the latest.
+            volciclab_optitrack_streamer.unix_time_stamp = unix_time_stamp;
+            volciclab_optitrack_streamer.translation = translation;
+            volciclab_optitrack_streamer.quaternion = quaternion;
+            volciclab_optitrack_streamer.rigid_body_name = rigid_body_name;
     
             %fprintf("Parsed rigid body details are:\n")
             %fprintf("Date of sending: %s.%s\n", datetime(unix_time_stamp/1000, 'ConvertFrom', 'posixtime', 'TimeZone', 'Asia/Dubai'), separated_received_string{1}(end-2:end));
@@ -267,11 +306,19 @@ classdef volciclab_optitrack_streamer
             %   - The name of the rigid body, as it was set in Motive.
             % After the execution, it flushes the buffer. This means that if there is nothing available in the buffer,
             % the function will just return without doing anything.
+            % IMPORTANT:
+            %   When you call this function more often than how fast packets are coming in,
+            %   it will return the latest received data. You will not get any warnings about this.
+            %   So if your rigid body gets stuck in the same position suddenly, you may have a network problem.
            
             if(volciclab_optitrack_streamer.udp_object.NumBytesAvailable > 10) % At least something should be in here, right?
-                    received_data = read(volciclab_optitrack_streamer.udp_object, volciclab_optitrack_streamer.udp_object.NumBytesAvailable, 'string');
+                received_data = read(volciclab_optitrack_streamer.udp_object, volciclab_optitrack_streamer.udp_object.NumBytesAvailable, 'string');
             else
-                % Do not update anything, just return.
+                % This is a fallback mode. If nothing is received, then return whatever was saved interally.
+                unix_time_stamp = volciclab_optitrack_streamer.unix_time_stamp;
+                translation = volciclab_optitrack_streamer.translation;
+                quaternion = volciclab_optitrack_streamer.quaternion;
+                rigid_body_name = volciclab_optitrack_streamer.rigid_body_name;
                 return
             end
 

@@ -57,6 +57,28 @@ my_fancy_rigid_body = volciclab_optitrack_streamer(1010, 20, 'ServerIP', "10.230
 
 There are other options and error management involved, including input argument sanity checks and dynamic port assignment. You normally won't need to change anything besides the server IP. See the code for details.
 
+**IMPORTANT:** When you create the object, it will hold execution of your code until it received a response from the streaming server. There is a built-in warning after five seconds.
+
+```Matlab
+>> my_fancy_rigid_body = volciclab_optitrack_streamer(1010, 5000)
+Warning: volciclab_optitrack_streamer(): No response from server in 5 seconds. If you use high decimation this may be expected, but you may have a network problem.
+> In volciclab_optitrack_streamer (line 170)
+my_fancy_rigid_body =
+
+  volciclab_optitrack_streamer with properties:
+
+         udp_object: [1×1 udpport.byte.UDPPort]
+      rigid_body_id: 1010
+         decimation: 5000
+            options: [1×1 struct]
+    unix_time_stamp: 1.7386e+12
+        translation: [0.8780 0.1750 0.0442]
+         quaternion: [-0.0635 0.0831 -0.2921 0.9507]
+    rigid_body_name: '40mmBall'
+
+>>
+```
+
 ### Getting the latest data
 
 Once your object is created, you can get the following:
@@ -97,6 +119,8 @@ rigid_body_name =
 * `quaternion` is the Qx Qy Qz Qw orientation of the object,
 * `rigid_body_name` is the name as it was specified in Motive.
 
+If there is nothing in the buffer, it will return the latest data it received. There are no warnings about this.
+
 ### Getting the complete contents of the buffer
 
 **IMPORTANT:** Do not rely on storing a lot of packets inside Matlab's UDP port receive buffer. Make sure you adjust the decimation to the least acceptable packet rate. This is also good for latency too. So ideally you shouldn't use this method at all, but it's here, just in case.
@@ -111,6 +135,8 @@ This is the same as `<your_object>.get_latest`, but the functions return every p
  * `translation` as an `N`x3 element matrix, with the X-Y-Z coordinates being in triplets
  * `quaternion` as an `N`x4 element matrix, with the QxQyQzQw being in quadruplets
  * `rigid_body_name` as a string.
+
+If there is nothing in the buffer, it will return the latest SINGLE FRAME data it received. There are no warnings about this.
 
  ### Other controls
 

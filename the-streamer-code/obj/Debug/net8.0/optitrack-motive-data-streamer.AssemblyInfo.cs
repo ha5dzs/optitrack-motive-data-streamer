@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("optitrack-motive-data-streamer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2e948ed405b3460b1f6030262fa73d8431fcc69f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a6e39f8d20d274230b6e495b2f7aabcd369c9970")]
 [assembly: System.Reflection.AssemblyProductAttribute("optitrack-motive-data-streamer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("optitrack-motive-data-streamer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
