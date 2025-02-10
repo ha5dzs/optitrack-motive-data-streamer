@@ -28,7 +28,9 @@
 %   -Stop streaming
 %   -Clean up before deletion
 
-classdef volciclab_optitrack_streamer
+classdef volciclab_optitrack_streamer < handle
+    % This is now a 'handle' class. This apparently allows me to adjust some properties from within a function
+
     % Global variables to the class. Once I set these in the constructor, these will become read-only.
     properties (SetAccess = immutable)
         udp_object % This is the OS network socket interface
@@ -77,13 +79,13 @@ classdef volciclab_optitrack_streamer
                options.ServerPort (1, 1) {mustBeNumeric} = 64923 % Speficy this to override which server port the request should be sent to
                options.ReceivePort (1, 1) {mustBeNumeric} = 24656 % Specify this to override which port the server should send the data to
             end
-            
+
             if(nargin < 2)
                 error("volciclab_optitrack_streamer(): At the very least, specify the digid body ID and the decimation.")
             end
-            
+
             % Sanity checks.
-    
+
             % Sanity checks: Rigid body
             if(length(rigid_body_id) ~= 1)
                % Is this a single value?
@@ -92,7 +94,7 @@ classdef volciclab_optitrack_streamer
             if(~isnumeric(rigid_body_id))
                % Is this a number?
                error("volciclab_optitrack_streamer(): The rigid body ID must be a number")
-            end                
+            end
             if(round(rigid_body_id) ~= rigid_body_id)
                % Is this a round number?
                error("volciclab_optitrack_streamer(): The rigid body ID must be an integer.")
@@ -105,7 +107,7 @@ classdef volciclab_optitrack_streamer
                % Is the origin marker being requested?
                warning("volciclab_optitrack_streamer(): You are requesting rigid body ID 0, which is hard-coded to tbe the origin marker.")
             end
-            
+
             % Sanity checks: decimation
             if(length(decimation) ~= 1)
                % Is this a single value?
@@ -114,7 +116,7 @@ classdef volciclab_optitrack_streamer
             if(~isnumeric(decimation))
                % Is this a number?
                error("volciclab_optitrack_streamer(): The decimation value must be a number")
-            end                
+            end
             if(round(decimation) ~= decimation)
                % Is this a round number?
                error("volciclab_optitrack_streamer(): The decimation value must be an integer.")
@@ -123,15 +125,15 @@ classdef volciclab_optitrack_streamer
                % Is the value valid in range?
                error("volciclab_optitrack_streamer(): The decimation value must be at least 1. 0 means no data being sent.");
             end
-    
+
             % Save these to the return object.
             object_to_be_put_out.rigid_body_id = rigid_body_id;
             object_to_be_put_out.decimation = decimation;
             object_to_be_put_out.options = options;
-    
+
             % Create the UDP object.
             search_for_acceptable_port = true;
-    
+
             while search_for_acceptable_port
                 try
                     object_to_be_put_out.udp_object = udpport('byte', 'LocalPort', options.ReceivePort);
@@ -141,19 +143,19 @@ classdef volciclab_optitrack_streamer
                     % If the port didn't open due to it being already used, then increase the port number again.
                     options.ReceivePort = options.ReceivePort + 1;
                     search_for_acceptable_port = true; % If we got here, we need to repeat trying to create the UDP object.
-    
+
                     if(options.ReceivePort > 65535)
                         error("volciclab_optitrack_streamer(): It seems that you ran out of ports that the UDP object can use.")
                     end
                 end
-    
+
             end
             % Now we have a working UDP object, and is assigned to the return value.
-    
+
             % Send rigid body streaming request to the server
             udp_payload = sprintf('%d;%d;%d', rigid_body_id, options.ReceivePort, decimation);
             object_to_be_put_out.udp_object.flush; % % Empty the buffer, just in case.
-            
+
             % ...Send the request
             write(object_to_be_put_out.udp_object, udp_payload, options.ServerIP, options.ServerPort);
 
@@ -181,7 +183,7 @@ classdef volciclab_optitrack_streamer
             % This function tells the streaming server to stop sending packets.
             udp_payload = sprintf('%d;%d;0', volciclab_optitrack_streamer.rigid_body_id, volciclab_optitrack_streamer.options.ReceivePort);
             volciclab_optitrack_streamer.udp_object.flush; % Empty the buffer, just in case.
-    
+
             % Send an UDP packet.
             write(volciclab_optitrack_streamer.udp_object, udp_payload, volciclab_optitrack_streamer.options.ServerIP, volciclab_optitrack_streamer.options.ServerPort);
         end
@@ -190,7 +192,7 @@ classdef volciclab_optitrack_streamer
             % This function is the same as the stop() function, but it automatically gets executed when the class gets destroyed.
             udp_payload = sprintf('%d;%d;0', volciclab_optitrack_streamer.rigid_body_id, volciclab_optitrack_streamer.options.ReceivePort);
             volciclab_optitrack_streamer.udp_object.flush; % Empty the buffer, just in case.
-    
+
             % Send an UDP packet.
             write(volciclab_optitrack_streamer.udp_object, udp_payload, volciclab_optitrack_streamer.options.ServerIP, volciclab_optitrack_streamer.options.ServerPort);
         end
@@ -222,10 +224,10 @@ classdef volciclab_optitrack_streamer
 
             % Create a vector of strings.
             incoming_packets = splitlines(received_data);
-            
+
             % There is an extra newline at the end
             no_of_packets_in_buffer = length(incoming_packets) - 1;
-            
+
             % The packets may not be in order. This is a UDP thing.
             % In order to choose the latest one, we can cheat.
             % Since we use Unix time, and the first digit is 1, then we know that
@@ -234,7 +236,7 @@ classdef volciclab_optitrack_streamer
             % Saturday, November 20, 2286 5:46:40 PM GMT.
             % If you are using this code 240 years from now, then I apologise for messing this up.
             % Otherwise:
-            
+
             timestamp_array = zeros(no_of_packets_in_buffer, 1); % Preallocate for speed.
             for i = 1:no_of_packets_in_buffer
                 single_frame = char(incoming_packets(i));
@@ -242,13 +244,13 @@ classdef volciclab_optitrack_streamer
                 timestamp_array(i) = str2double(single_frame(1:13));
                 clear single_frame % This is a bit of a hack, but I had to convert from string to character array.
             end
-            
+
             % Now we can calculate which timestamp is the largest, i.e. the most recent packet.
             most_recent_packet_index = find(timestamp_array==max(timestamp_array));
-            
+
             most_recent_packet = incoming_packets(most_recent_packet_index);
 
-            
+
 
             % We now parse the latest packet.
             separated_received_string = split(most_recent_packet, ";");
@@ -264,14 +266,14 @@ classdef volciclab_optitrack_streamer
             end
 
             rigid_body_name = strip(separated_received_string{5}, newline); % remove the newline
-    
+
             translation_coords_as_string_array = split(separated_received_string{3}, ",");
             translation = [str2double(translation_coords_as_string_array{1}), ...
                             str2double(translation_coords_as_string_array{2}), ...
                             str2double(translation_coords_as_string_array{3})];
-    
+
             quaternion_as_string_array = split(separated_received_string{4}, ",");
-    
+
             quaternion = [str2double(quaternion_as_string_array{1}), ...
                           str2double(quaternion_as_string_array{2}), ...
                           str2double(quaternion_as_string_array{3}), ...
@@ -283,7 +285,7 @@ classdef volciclab_optitrack_streamer
             volciclab_optitrack_streamer.translation = translation;
             volciclab_optitrack_streamer.quaternion = quaternion;
             volciclab_optitrack_streamer.rigid_body_name = rigid_body_name;
-    
+
             %fprintf("Parsed rigid body details are:\n")
             %fprintf("Date of sending: %s.%s\n", datetime(unix_time_stamp/1000, 'ConvertFrom', 'posixtime', 'TimeZone', 'Asia/Dubai'), separated_received_string{1}(end-2:end));
             %fprintf("\tID: %d, Name: %s\n", rigid_body_id, rigid_body_name)
@@ -310,7 +312,7 @@ classdef volciclab_optitrack_streamer
             %   When you call this function more often than how fast packets are coming in,
             %   it will return the latest received data. You will not get any warnings about this.
             %   So if your rigid body gets stuck in the same position suddenly, you may have a network problem.
-           
+
             if(volciclab_optitrack_streamer.udp_object.NumBytesAvailable > 10) % At least something should be in here, right?
                 received_data = read(volciclab_optitrack_streamer.udp_object, volciclab_optitrack_streamer.udp_object.NumBytesAvailable, 'string');
             else
@@ -324,10 +326,10 @@ classdef volciclab_optitrack_streamer
 
             % Create a vector of strings.
             incoming_packets = splitlines(received_data);
-            
+
             % There is an extra newline at the end
             no_of_packets_in_buffer = length(incoming_packets) - 1;
-            
+
             % The packets may not be in order. This is a UDP thing.
             % In order to choose the latest one, we can cheat.
             % Since we use Unix time, and the first digit is 1, then we know that
@@ -336,7 +338,7 @@ classdef volciclab_optitrack_streamer
             % Saturday, November 20, 2286 5:46:40 PM GMT.
             % If you are using this code 240 years from now, then I apologise for messing this up.
             % Otherwise:
-            
+
             timestamp_array = zeros(no_of_packets_in_buffer, 1); % Preallocate for speed.
             for i = 1:no_of_packets_in_buffer
                 single_frame = char(incoming_packets(i));
@@ -344,7 +346,7 @@ classdef volciclab_optitrack_streamer
                 timestamp_array(i) = str2double(single_frame(1:13));
                 clear single_frame % This is a bit of a hack, but I had to convert from string to character array.
             end
-            
+
 
             %Preallocate output variables here.
             unix_time_stamp = zeros(1, no_of_packets_in_buffer);
@@ -354,39 +356,39 @@ classdef volciclab_optitrack_streamer
             for i = 1:no_of_packets_in_buffer
                 % We now parse the latest packet.
                 separated_received_string = split(incoming_packets(i), ";");
-    
+
                 unix_time_stamp(i) = str2num(separated_received_string{1});
                 rigid_body_id_as_received = str2num(separated_received_string{2});
-    
+
                 % Added safeguard:
                 if(volciclab_optitrack_streamer.rigid_body_id ~= rigid_body_id_as_received)
                     fprintf(2, "\nSomething is wrong with the incoming packets!");
                     fprintf(1, "This object is for rigid body %d. Instead, the packet's content is for rigid body ID %d", volciclab_optitrack_streamer.rigid_body_id, rigid_body_id_as_received)
                     error("volciclab_optitrack_streamer::get_latest(): Rigid body ID mismatch.")
                 end
-    
+
                 % I don't really care if this one stays in the loop.
                 rigid_body_name = strip(separated_received_string{5}, newline); % remove the newline
-        
+
                 translation_coords_as_string_array = split(separated_received_string{3}, ",");
                 translation(i, :) = [str2double(translation_coords_as_string_array{1}), ...
                                 str2double(translation_coords_as_string_array{2}), ...
                                 str2double(translation_coords_as_string_array{3})];
-        
+
                 quaternion_as_string_array = split(separated_received_string{4}, ",");
-        
+
                 quaternion(i, :) = [str2double(quaternion_as_string_array{1}), ...
                               str2double(quaternion_as_string_array{2}), ...
                               str2double(quaternion_as_string_array{3}), ...
                               str2double(quaternion_as_string_array{4})];
-    
+
             end
-    
-                    
+
+
 
         end
     end
-    
+
 end
 
 
