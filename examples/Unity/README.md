@@ -62,7 +62,6 @@ The GUI options are the publicly accessible global variables. Unity parses them 
 
 * In `void Update()`:
   * The code prepares the buffer into which the packet will be forwarded
-  * **WAITS FOR A PACKET TO COME IN WHILE POTENTIALLY BLOCKING EVERYTHING ELSE**
   * Separates the string-ified packet from the server by field.
     * Does some sanity checks on the string, to make sure we have stuff to process.
   * With some more string bashing, it separates the coordinates and the quaternions
@@ -72,3 +71,8 @@ The GUI options are the publicly accessible global variables. Unity parses them 
 
 * In `void OnDestroy()` (also in `void OnApplicationQuite()`):
   * It sends a packet with the same port configuration, but sets the decimation to 0. This will tell the server to stop sending packets.
+
+There are two implementations:
+
+* `streamer_client_script.cs` is the simplest one, but it blocks execution. So if you have issues with lost packets or performance issues with the server, your application will freeze. If you are developing for VR, then this is not a good option.
+* `streamer_client_script_async.cs` is the non-blocking version, best suited for VR. Tested on Oculus/Meta android headsets.
