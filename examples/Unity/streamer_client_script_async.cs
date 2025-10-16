@@ -14,7 +14,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading;
 
-public class NewMonoBehaviourScript : MonoBehaviour
+public class OptitrackMotiveStreamingClientForUnity : MonoBehaviour
 {
 
     /*
@@ -26,15 +26,27 @@ public class NewMonoBehaviourScript : MonoBehaviour
     public int listeningPort = 54622;
     public bool useRandomListeningPortForEachInstanceOfThisScript = true;
     public int decimation = 3;
-    public bool swapYandZCoordinates = false;
+    public bool swapYandZCoordinates = true;
     public int rigidBodyIDYouWantToTrack = 2501;
     public bool useRigidBodyNameAsGameObjectName = false;
+    
+
+    /*
+     * If you plan to use this script on many rigid bodies at the same time,
+     * you may need to rename the UDP client's local instance.
+     * I suspect this happens because of Unity's execution model.
+     * Not sure, proceed with caution.
+     */
+
+    private UdpClient udp_client_you_may_rename_this = new UdpClient();
+
+
 
     // Not sure what is the difference between Unity's random number generator and the Microsoft-provided random number generator.
     private System.Random rng = new System.Random();
     private bool game_object_name_updated = false; //so we don't have to rename the game object every frame.
 
-    UdpClient udp_client = new UdpClient();
+    
 
     // This will be written to using receive_message(). But, in case nothing comes in, this is a placeholder
     private static string received_payload_as_string;
@@ -54,7 +66,7 @@ public class NewMonoBehaviourScript : MonoBehaviour
             listeningPort = rng.Next(listeningPort, listeningPort + 200);
         }
 
-        udp_client = new UdpClient(listeningPort); // Change where we listen
+        udp_client_you_may_rename_this = new UdpClient(listeningPort); // Change where we listen
         //udp_client.Client.ReceiveTimeout = 5000;
 
 
@@ -69,10 +81,10 @@ public class NewMonoBehaviourScript : MonoBehaviour
         Byte[] payload_to_send = Encoding.ASCII.GetBytes(request_to_send);
 
         // No try-catch here, I want this to fail
-        udp_client.Send(payload_to_send, payload_to_send.Length, streamerServerAddress, streamerServerPort);
+        udp_client_you_may_rename_this.Send(payload_to_send, payload_to_send.Length, streamerServerAddress, streamerServerPort);
 
         // Create the asyncronous call to receive_message()
-        udp_client.BeginReceive(new AsyncCallback(receive_message), udp_client);
+        udp_client_you_may_rename_this.BeginReceive(new AsyncCallback(receive_message), udp_client_you_may_rename_this);
 
         /*
          * I know you are lazy when it somes to reading docs, so here is a tl;dr for you:
@@ -188,13 +200,65 @@ public class NewMonoBehaviourScript : MonoBehaviour
             {
                 // If we got here, we are swapping Y and Z.
                 transform.position = new UnityEngine.Vector3(translation_x, translation_z, translation_y);
+
+                // The OptiTrack rotation conventions are different, so are the angle offsets.
+
+
+                /*
+                 * Method 1: Convert to Euler, apply the inversions and rotations, then convert back to Quaternions
+                 * We need to invert all rotations, subtract 90° from the X rotation, and add 180° to Z rotation.
+                 
+                    // Collect the converted floating-point numbers into a UnityEngine.Quaternion
+                    UnityEngine.Quaternion quaternion_vector = new UnityEngine.Quaternion(quaternion_qx, quaternion_qz, quaternion_qy, quaternion_qw);
+                    // Convert the quaternion into Euler angles. We use Unity's internal convention of rotation order.
+                    UnityEngine.Vector3 euler_rotations = quaternion_vector.eulerAngles;
+                    // Invert the axes and add rotation offsets where applicable. Units are degrees.
+                    euler_rotations[0] = -1 * euler_rotations[0] + (-90); //x
+                    euler_rotations[1] = -1 * euler_rotations[1] + 0; //y
+                    euler_rotations[2] = -1 * euler_rotations[2] + 180; //z
+                    // Assign the changed rotation to the quaternion
+                    transform.rotation = UnityEngine.Quaternion.Euler(euler_rotations);
+
+                 * This one works, but the rotations 'jump' at corner conditions (when a rotation is 90°, i.e. the 'gimbal lock'.)
+                 */
+
+                /* Method 2:
+                 * We need to invert all rotations, subtract 90° from X rotation, and add 180° to Z rotation.
+                 * ...but for extra spice, done directly on the Quaternion.
+                 */
+
+                UnityEngine.Quaternion quaternion_with_axes_inverted = new UnityEngine.Quaternion(-quaternion_qx, -quaternion_qz, -quaternion_qy, quaternion_qw);
+
+                UnityEngine.Quaternion rotations_added = UnityEngine.Quaternion.Euler(-90, 0, 180);
+                //UnityEngine.Quaternion rotations_added = UnityEngine.Quaternion.Euler(0, 0, 0);
+
+                // Rotating quaternion is vectorial multiplication
+                UnityEngine.Quaternion quaternion_rotated = quaternion_with_axes_inverted * rotations_added;
+
+                transform.rotation = quaternion_rotated;
+
+
             }
             else
             {
+                // Proceed as normal
                 transform.position = new UnityEngine.Vector3(translation_x, translation_y, translation_z);
+
+
+
+                // TODO: Verify this with users that have a game-engine-like set-up. We don't have it here, so can't test it.
+
+                UnityEngine.Quaternion quaternion_with_axes_inverted = new UnityEngine.Quaternion(-quaternion_qx, -quaternion_qy, -quaternion_qz, quaternion_qw);
+
+                UnityEngine.Quaternion rotations_added = UnityEngine.Quaternion.Euler(-90, 180, 0);
+
+                // Rotating quaternion is vectorial multiplication
+                UnityEngine.Quaternion quaternion_rotated = quaternion_with_axes_inverted * rotations_added;
+
+                transform.rotation = quaternion_rotated;
             }
 
-            transform.rotation = new UnityEngine.Quaternion(quaternion_qx, quaternion_qy, quaternion_qz, quaternion_qw);
+            
 
         }
 
@@ -212,7 +276,7 @@ public class NewMonoBehaviourScript : MonoBehaviour
         Byte[] payload_to_send = Encoding.ASCII.GetBytes(request_to_send);
 
         // No try-catch here, I want this to fail
-        udp_client.Send(payload_to_send, payload_to_send.Length, streamerServerAddress, streamerServerPort);
+        udp_client_you_may_rename_this.Send(payload_to_send, payload_to_send.Length, streamerServerAddress, streamerServerPort);
 
 
     }

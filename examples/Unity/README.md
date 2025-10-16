@@ -6,9 +6,8 @@ This is a script that fetches and processes the data coming in from the data str
 
 Create an empty game object. Add the mesh or whatever you want to be tracked, add this script, and then adjust the script as needed. You will want something like this:
 
-* whatever-game-object
-  * Whatever mesh
-  * `streamer_client_script
+* whatever-game-object with whichever streamer client script added to it
+  * Whatever mesh or other children
 
 So it should look like this:
 ![Unity set-up](img/script_config.png)
@@ -36,7 +35,7 @@ At the very least, you need to know where the data streamer application runs, an
   * If your decimation is too high, the buffer may fill up, which will lead to increased lag and crashes.
 * Swap Y and Z Coordinates (`bool`)
 
-    This is here due to clashing standards. Some motion tracker set-ups have the Z axis up, others have the Y axis up. You can change this in Motive settings as well for streaming, but you can do it here too.
+    This is here due to clashing standards. Some motion tracker set-ups have the Z axis up, others have the Y axis up. You can change this in Motive settings as well for streaming, but you can do it here too. This also modifies the rotation directions and offsets accordingly.
 * Rigid Body ID You Want To Track (`uint16`)
 
     This is the rigid body ID in Motive. **Rigid Body ID 0 is reserved for the origin marker.** You can use any number between 1 and 65535. If the rigid body you specified here is not present in Motive, it will return a bunch of NaNs as coordinates and rotations.
@@ -68,6 +67,7 @@ The GUI options are the publicly accessible global variables. Unity parses them 
   * If need to, it will update the parent game object's name
   * Finally, it updates the coordinates and quaternion
     * ...and swaps Y and Z as required.
+    * Does some quaternion-based calculations with the rotation, so the object in real life will rotate the same as in the game engine
 
 * In `void OnDestroy()` (also in `void OnApplicationQuite()`):
   * It sends a packet with the same port configuration, but sets the decimation to 0. This will tell the server to stop sending packets.

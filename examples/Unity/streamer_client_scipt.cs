@@ -181,13 +181,34 @@ public class streamer_client_scipt : MonoBehaviour
             {
                 // If we got here, we are swapping Y and Z.
                 transform.position = new UnityEngine.Vector3(translation_x, translation_z, translation_y);
+
+                // Do this with the rotations too
+                UnityEngine.Quaternion quaternion_with_axes_inverted = new UnityEngine.Quaternion(-quaternion_qx, -quaternion_qz, -quaternion_qy, quaternion_qw);
+
+                UnityEngine.Quaternion rotations_added = UnityEngine.Quaternion.Euler(-90, 0, 180);
+                //UnityEngine.Quaternion rotations_added = UnityEngine.Quaternion.Euler(0, 0, 0);
+
+                // Rotating quaternion is vectorial multiplication
+                UnityEngine.Quaternion quaternion_rotated = quaternion_with_axes_inverted * rotations_added;
+
+                transform.rotation = quaternion_rotated;
             }
             else
             {
                 transform.position = new UnityEngine.Vector3(translation_x, translation_y, translation_z);
+
+                // Invert rotation directions
+                UnityEngine.Quaternion quaternion_with_axes_inverted = new UnityEngine.Quaternion(-quaternion_qx, -quaternion_qy, -quaternion_qz, quaternion_qw);
+
+                UnityEngine.Quaternion rotations_added = UnityEngine.Quaternion.Euler(-90, 180, 0);
+
+                // Rotating quaternion is vectorial multiplication
+                UnityEngine.Quaternion quaternion_rotated = quaternion_with_axes_inverted * rotations_added;
+
+                transform.rotation = quaternion_rotated;
             }
 
-            transform.rotation = new UnityEngine.Quaternion(quaternion_qx, quaternion_qy, quaternion_qz, quaternion_qw);
+            //transform.rotation = new UnityEngine.Quaternion(quaternion_qx, quaternion_qy, quaternion_qz, quaternion_qw);
 
         }
 
