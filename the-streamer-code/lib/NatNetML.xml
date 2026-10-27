@@ -182,6 +182,12 @@ A NatNet message packet.
 Description of the server application.
 </summary>
         </member>
+        <member name="F:NatNetML.FrameOfMocapData.GPIOs">
+            <summary>GPIO data</summary>
+        </member>
+        <member name="F:NatNetML.FrameOfMocapData.IMUs">
+            <summary>IMU data</summary>
+        </member>
         <member name="F:NatNetML.FrameOfMocapData.Devices">
             <summary>Force Plate data</summary>
         </member>
@@ -205,6 +211,12 @@ Description of the server application.
         </member>
         <member name="F:NatNetML.FrameOfMocapData.MarkerSets">
             <summary>MarkerSet data</summary>
+        </member>
+        <member name="F:NatNetML.FrameOfMocapData.nGPIOs">
+            <summary>number of GPIOs in this frame</summary>
+        </member>
+        <member name="F:NatNetML.FrameOfMocapData.nIMUs">
+            <summary>number of IMUs in this frame</summary>
         </member>
         <member name="F:NatNetML.FrameOfMocapData.nDevices">
             <summary>number of Devices in this frame</summary>
@@ -266,6 +278,52 @@ Description of the server application.
         <member name="T:NatNetML.FrameOfMocapData">
             <summary>
 A single frame of all data (Markers, RigidBodies, etc) captured by the server.
+</summary>
+        </member>
+        <member name="F:NatNetML.GPIOData.PortData">
+            <summary>Port data</summary>
+        </member>
+        <member name="F:NatNetML.GPIOData.nPorts">
+            <summary>number of ports/pins</summary>
+        </member>
+        <member name="F:NatNetML.GPIOData.ID">
+            <summary>used for order, and for identification in the data stream</summary>
+        </member>
+        <member name="T:NatNetML.GPIOData">
+            <summary>
+Frame(s) of Device data.  Device data typically has multiple frames (subframes) of data per mocap frame
+</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.params">
+            <summary>params</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.qw">
+            <summary>w orientation (quaternion)</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.qz">
+            <summary>z orientation (quaternion)</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.qy">
+            <summary>y orientation (quaternion)</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.qx">
+            <summary>x orientation (quaternion)</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.z">
+            <summary>z position</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.y">
+            <summary>y position</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.x">
+            <summary>x position</summary>
+        </member>
+        <member name="F:NatNetML.IMUData.ID">
+            <summary>Unique identifier of IMU</summary>
+        </member>
+        <member name="T:NatNetML.IMUData">
+            <summary>
+IMU Data
 </summary>
         </member>
         <member name="F:NatNetML.AssetData.Markers">
@@ -394,6 +452,40 @@ Recorded rigid body data for a single RigidBody for a single frame
         <member name="T:NatNetML.MarkerSetData">
             <summary>
 Recorded optical marker data for a single Markerset (MarkerSet, RigidBody, Skeleton) on a single frame. This data is model-filled where occluded.
+</summary>
+        </member>
+        <member name="F:NatNetML.GPIO.PortNames">
+            <summary>Array of I/O pins/ports names</summary>
+        </member>
+        <member name="F:NatNetML.GPIO.PortCount">
+            <summary>Number of I/O pins/ports on the GPIO device</summary>
+        </member>
+        <member name="F:NatNetML.GPIO.ID">
+            <summary>used for order, and for identification in the data stream</summary>
+        </member>
+        <member name="F:NatNetML.GPIO.Name">
+            <summary>Device name</summary>
+        </member>
+        <member name="T:NatNetML.GPIO">
+            <summary>
+Describes a GPIO board
+</summary>
+        </member>
+        <member name="F:NatNetML.IMU.RigidBodyID">
+            <summary>ID of fused RigidBody</summary>
+        </member>
+        <member name="F:NatNetML.IMU.SensorFused">
+            <summary>Sensor fused with Rigid Body?</summary>
+        </member>
+        <member name="F:NatNetML.IMU.ID">
+            <summary>used for assciating data wit hdescription as well as GPIO board</summary>
+        </member>
+        <member name="F:NatNetML.IMU.Name">
+            <summary>IMU name</summary>
+        </member>
+        <member name="T:NatNetML.IMU">
+            <summary>
+Describes an IMU
 </summary>
         </member>
         <member name="F:NatNetML.AssetDescriptor.Markers">

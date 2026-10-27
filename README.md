@@ -1,8 +1,8 @@
 # Optitrack Motive data streamer
 
-This code utilises [the NatNet SDK](https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-4.0), and makes a streaming system that is much more flexible than NatNet.
+This code utilises [the NatNet SDK](https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-4.5), but it makes streaming rigid bodies much more flexible than the stock NatNet implementation.
 
-**NOTE: This is intended for research and not for production environment. There is no security or encryption of any kind implemented.**
+**NOTE: This is intended for research and not for production environment. There is no authentication, security or encryption of any kind implemented.**
 
 Once the server is running and configured with the appropriate input arguments, you can request a particular rigid body data in a plain text and easily parsable format to the UDP port of your choice. You can also control how often should these packets be sent to you.
 
@@ -17,7 +17,7 @@ winget install Microsoft.Dotnet.Runtime.8 --disable-interactivity
 
 ## Usage
 
-**IMPORTANT:** Rigid body ID **0** is reserved to be the origin and 'which way is up' device, please do not use this ID in your tracking set-up. Motive rigid body IDs seem to be between 1 and 65535 by default, please stick to this convention. At the same time, you can use this while streaming rigid body information to dynamically align different coordinate systems.
+**IMPORTANT:** Rigid body ID **0** is reserved to be the origin and 'which way is up' device, please do not use this ID in your tracking set-up. Motive rigid body IDs seem to an integer starting from 1 by default, please stick to this convention. At the same time, you can use this while streaming rigid body information to dynamically align different coordinate systems.
 
 You can start this by specifying the IP address of the computer Motive runs on as the input argument
 
