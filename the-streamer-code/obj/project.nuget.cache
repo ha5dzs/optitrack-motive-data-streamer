@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "a5VYOc5vu7A=",
+  "dgSpecHash": "XHX4WtFJRgM=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ha5dz\\optitrack-motive-data-streamer\\the-streamer-code\\optitrack-motive-data-streamer.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\ha5dzs\\sandbox\\optitrack-motive-data-streamer\\the-streamer-code\\optitrack-motive-data-streamer.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ha5dzs\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.33\\microsoft.netcore.app.ref.8.0.33.nupkg.sha512",
+    "C:\\Users\\ha5dzs\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.33\\microsoft.windowsdesktop.app.ref.8.0.33.nupkg.sha512",
+    "C:\\Users\\ha5dzs\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.33\\microsoft.aspnetcore.app.ref.8.0.33.nupkg.sha512",
+    "C:\\Users\\ha5dzs\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\8.0.33\\microsoft.netcore.app.host.win-x64.8.0.33.nupkg.sha512"
+  ],
   "logs": []
 }

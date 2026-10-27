@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net8.0": {}
   },
@@ -8,24 +8,19 @@
     "net8.0": []
   },
   "packageFolders": {
-    "C:\\Users\\ha5dz\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\ha5dzs\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ha5dz\\optitrack-motive-data-streamer\\the-streamer-code\\optitrack-motive-data-streamer.csproj",
+      "projectUniqueName": "C:\\Users\\ha5dzs\\sandbox\\optitrack-motive-data-streamer\\the-streamer-code\\optitrack-motive-data-streamer.csproj",
       "projectName": "optitrack-motive-data-streamer",
-      "projectPath": "C:\\Users\\ha5dz\\optitrack-motive-data-streamer\\the-streamer-code\\optitrack-motive-data-streamer.csproj",
-      "packagesPath": "C:\\Users\\ha5dz\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ha5dz\\optitrack-motive-data-streamer\\the-streamer-code\\obj\\",
+      "projectPath": "C:\\Users\\ha5dzs\\sandbox\\optitrack-motive-data-streamer\\the-streamer-code\\optitrack-motive-data-streamer.csproj",
+      "packagesPath": "C:\\Users\\ha5dzs\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\ha5dzs\\sandbox\\optitrack-motive-data-streamer\\the-streamer-code\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\ha5dz\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\ha5dzs\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -33,10 +28,11 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "X:\\Zoltan\\sandbox\\LC-MISDK_win100_all_R2\\nupkg": {}
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {}
         }
@@ -51,10 +47,11 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.400"
     },
     "frameworks": {
       "net8.0": {
+        "framework": "net8.0",
         "targetAlias": "net8.0",
         "imports": [
           "net461",
@@ -67,12 +64,30 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.33, 8.0.33]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[8.0.33, 8.0.33]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[8.0.33, 8.0.33]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[8.0.33, 8.0.33]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.403/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

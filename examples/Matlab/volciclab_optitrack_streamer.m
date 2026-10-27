@@ -1,6 +1,18 @@
 % Matlab streamer class for the optitrack-motive-data-streamer.
 % https://github.com/ha5dzs/optitrack-motive-data-streamer
 %
+% tl;dr usage:
+% - Start streaming by:
+% my_fancy_rigid_body = volciclab_optitrack_streamer(<rigid body ID>, <decimation>);
+% - Get the latest rigid body info by:
+% [unix_time, translation, quaternion, rigid_body_name] = my_fancy_rigid_body.get_latest;
+% - Stop streaming by either:
+% clear my_fancy_rigid_body;
+% my_fancy_rigid_body.stop;
+%
+% There are other intricacies in the docs, but
+% these three functions are the bare minimum to get you going.
+%
 % This had to be written because of NaturalPoint's support:
 % [Internal iicket PNN-35]
 % "Unfortunately, there have been no updates to the ticket or the
