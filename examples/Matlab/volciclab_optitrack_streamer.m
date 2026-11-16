@@ -5,7 +5,7 @@
 % - Start streaming by:
 % my_fancy_rigid_body = volciclab_optitrack_streamer(<rigid body ID>, <decimation>);
 % - Get the latest rigid body info by:
-% [unix_time, translation, quaternion, rigid_body_name] = my_fancy_rigid_body.get_latest;
+% [unix_time_utc, translation, quaternion, rigid_body_name] = my_fancy_rigid_body.get_latest;
 % - Stop streaming by either:
 % clear my_fancy_rigid_body;
 % my_fancy_rigid_body.stop;

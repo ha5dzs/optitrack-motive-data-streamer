@@ -648,16 +648,27 @@ public class OpitrackMotiveDataStreamer
                 // Did we receive the correct number of arguments?
                 if (packet_contents_per_field.Length != 3)
                 {
-                    // If we got here, we received an incorrect number of arguments.
+                    // If we got here, we received an incorrect number of arguments. Ignore this packet
+                    // and keep listening. (Do NOT return here: that would terminate the listener thread.
+                    // A malformed or stray packet must not take the control channel down.)
                     Console.WriteLine("WaitForInstructions(): Host {0} sent something strange: {1}, and must be ignored. Expected format is <RigidBodyID>;<SendToWhichPort>;<Decimation>", sender_ip_address, packet_contents);
-                    received_request = false;
-                    return;
+                    continue;
                 }
 
-                // Parse the separated string into 16-bit integers.
-                var received_rigid_body_id = UInt16.Parse(packet_contents_per_field[0]);
-                var received_destination_port = UInt16.Parse(packet_contents_per_field[1]);
-                var received_decimation = UInt16.Parse(packet_contents_per_field[2]);
+                /*
+                 * Parse the separated string into 16-bit integers.
+                 * Previously this used UInt16.Parse(), which throws FormatException on
+                 * non-numeric fields - an unhandled exception on this thread would have
+                 * killed the whole process. Parse defensively: bad data is ignored, the
+                 * listener keeps running.
+                 */
+                if (!UInt16.TryParse(packet_contents_per_field[0], out var received_rigid_body_id) ||
+                    !UInt16.TryParse(packet_contents_per_field[1], out var received_destination_port) ||
+                    !UInt16.TryParse(packet_contents_per_field[2], out var received_decimation))
+                {
+                    Console.WriteLine("WaitForInstructions(): Host {0} sent an unparseable packet: {1}, and must be ignored. Expected format is <RigidBodyID>;<SendToWhichPort>;<Decimation>", sender_ip_address, packet_contents);
+                    continue;
+                }
 
                 Console.WriteLine("WaitForInstructions(): Parsed message from {0}:\n\t{1};{2};{3}", sender_ip_address, received_rigid_body_id, received_destination_port, received_decimation);
 
@@ -698,9 +709,12 @@ public class OpitrackMotiveDataStreamer
                 // Do we have a match?
                 if (index_in_shared_rigid_bodies < 0)
                 {
+                    // If we got here, the requested rigid body was not found in the shared array.
+                    // Ignore this request and keep listening. (Do NOT return here: that would
+                    // terminate the listener thread, and every packet after this one - including
+                    // perfectly valid ones - would be silently dropped until restart.)
                     Console.WriteLine("WaitForInstructions(): Request by host {0}, message {1}: Rigid body ID {2} was not found in currently streamed rigid bodies. Ignoring request.", sender_ip_address, packet_contents, received_rigid_body_id);
-                    received_request = false;
-                    return;
+                    continue;
                 }
                 else
                 {

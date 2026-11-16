@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "optitrack-motive-data-streamer/1.0.0": {
+        "dependencies": {
+          "NatNetML": "4.5.9728.24238"
+        },
+        "runtime": {
+          "optitrack-motive-data-streamer.dll": {}
+        }
+      },
+      "NatNetML/4.5.9728.24238": {
+        "runtime": {
+          "NatNetML.dll": {
+            "assemblyVersion": "4.5.9728.24238",
+            "fileVersion": "4.5.1.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "optitrack-motive-data-streamer/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NatNetML/4.5.9728.24238": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
